@@ -46,24 +46,22 @@ search.send_keys(keywords)
 search.send_keys(Keys.ENTER)
 
 # this is just to ensure that the page is loaded 
-driver.implicitly_wait(5)
+driver.implicitly_wait(10)
+
+# Take to driver directly to the search-results path
+search_result = driver.find_element_by_xpath('/html/body/div[1]/div[1]/div/div/div/span/div/div[2]')
 
 # It renders the JS code and stores all of the information in static HTML code
 html = driver.page_source
-# html = requests.get(driver.page_source).text
 
-# Now, we could simply apply bs4 to html variable 
-soup = BeautifulSoup(html, "html.parser") 
-# all_ressources = soup.find("div", {"class" : "search-result"}) 
-all_ressources = soup.find('div', {'class' : 'record record-article'}) 
-print(len(all_ressources))
-# ressources_links = all_ressources.find_all('a', href=True) 
-# print(len(ressources_links))
-# count = 0
-# for ressource in ressources_links : 
-#     # print(ressource['href']) 
-#     count = count + 1
-#     if(count == 20) : 
-#         break
+# Now, we can simply apply bs4 to html variable 
+soup = BeautifulSoup(html, "html.parser")
+
+# Extract links
+ressources_links = soup.select("div.record.record-article [href]")
+links = []
+for ressource in ressources_links : 
+    links.append(ressource['href'])
+    print(ressource['href'])
   
-# driver.quit() # closing the webdriver 
+driver.quit() # closing the webdriver 
