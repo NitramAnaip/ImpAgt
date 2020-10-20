@@ -66,4 +66,4 @@ print(len(all_ressources))
 #     if(count == 20) : 
 #         break
   
-driver.quit() # closing the webdriver 
+# driver.quit() # closing the webdriver 
