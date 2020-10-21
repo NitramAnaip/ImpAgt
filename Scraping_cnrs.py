@@ -17,7 +17,7 @@ driver = webdriver.Chrome(chromedriver)
 url = "https://bib.cnrs.fr/#"
 ID = "18CHIMFR3417"
 mdp = "MSSLPT"
-ressource_type = "article"
+ressource_type = "book"
 keywords = "agriculture technology"
 
 driver.get(url)
@@ -36,12 +36,13 @@ connect = driver.find_element_by_xpath('/html/body/div[4]/div[2]/div/div/div[2]/
 
 # Select if you want to search for books or articles
 if ressource_type=="article":
-    article = driver.find_element_by_xpath('/html/body/div[1]/div[1]/div/div/nav/div/ul/li[1]/a').click()
+    article = driver.find_element_by_xpath('/html/body/div[1]/div[1]/div/div/nav/div/ul/li[1]').click()
+    search = driver.find_element_by_xpath('/html/body/div[1]/div[1]/div/div/div/div[1]/div/div[1]/span/div/div[1]/span/div/input')
 elif ressource_type=="book":
-    book = driver.find_element_by_xpath('/html/body/div[1]/div[1]/div/div/nav/div/ul/li[2]').click()
+    book = driver.find_element_by_xpath('/html/body/div[1]/div[1]/div/div/nav/div/ul/li[2]/a').click()
+    search = driver.find_element_by_xpath('/html/body/div[1]/div[1]/div/div/div/div[1]/div/div[1]/span/div/input')
 
 # Search for ressources using keywords
-search = driver.find_element_by_xpath('/html/body/div[1]/div[1]/div/div/div/div[1]/div/div[1]/span/div/div[1]/span/div/input')
 search.send_keys(keywords)
 search.send_keys(Keys.ENTER)
 
@@ -58,7 +59,8 @@ html = driver.page_source
 soup = BeautifulSoup(html, "html.parser")
 
 # Extract links
-ressources_links = soup.select("div.record.record-article [href]")
+if ressource_type=="article": ressources_links = soup.select("div.record.record-article [href]")
+elif ressource_type=="book": ressources_links = soup.select("div.record.record-publication [href]")
 links = []
 for ressource in ressources_links : 
     links.append(ressource['href'])
