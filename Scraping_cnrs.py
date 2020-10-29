@@ -1,5 +1,6 @@
 # Import bibs
 import os
+import pickle
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
@@ -19,8 +20,8 @@ driver = webdriver.Chrome(chromedriver)
 url = "https://bib.cnrs.fr/#"
 ID = "18CHIMFR3417"
 mdp = "MSSLPT"
-ressource_type = "book"
-keywords = "technologie"
+ressource_type = "article"
+keywords = "agriculture"
 
 driver.get(url)
 
@@ -28,7 +29,7 @@ driver.get(url)
 connexion = driver.find_element_by_class_name("login-button.btn.btn-link").click()
 via_code = driver.find_element_by_class_name("inist-button.btn.btn-primary.btn-block").click()
 
-# Put a wait time because the window hasn't poped up yet
+# Put a wait time because the window hasn't popped up yet
 driver.implicitly_wait(5)
 login = driver.find_element_by_class_name('username.form-control')
 login.send_keys(ID)
@@ -57,8 +58,8 @@ n_links = 0
 
 # Set current page
 current_page = 1
-
-while True:
+links = []
+while True or current_page<100:
     # Take to driver directly to the search-results path
     search_result = driver.find_element_by_class_name('search-result')
 
@@ -84,10 +85,10 @@ while True:
     # Extract links
     if ressource_type=="article": ressources_links = soup.select("div.record.record-article [href]")
     elif ressource_type=="book": ressources_links = soup.select("div.record.record-publication [href]")
-    links = []
+    
     for ressource in ressources_links : 
         links.append(ressource['href'])
-        print(ressource['href'])
+        #print(ressource['href'])
     n_links += len(ressources_links)
 
     # Next page
@@ -97,3 +98,9 @@ while True:
 
 print('Number of links extracted : {}'.format(n_links))
 driver.quit() # closing the webdriver 
+
+print(links)
+
+# Comment out if you dont want to save urls to harddrive
+with open("{}_urls_{}.txt".format(ressource_type, keywords), "wb") as fp:   #Pickling
+    pickle.dump(links, fp)
