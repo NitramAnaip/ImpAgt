@@ -12,40 +12,45 @@ from bs4 import BeautifulSoup
 import requests
 
 
+
+
 # Load driver (for Google Chrome)  
 chromedriver = "/usr/local/bin/chromedriver"
 os.environ["webdriver.chrome.driver"] = chromedriver
 
-def springer_abstract_parser(url, abs_dict):
+def springer_abstract_parser(driver, url, abs_dict, keywords, source):
     """
     ARGS: url is the url of the journal/abstract/article you wnt to get
         abs_dict is the dictionnary containing all our data (abstracts, doi s, authors ...)
     """
-    driver = webdriver.Chrome(chromedriver)
-    driver.get(url)
-    
-    #DOI
-    doi = driver.find_element_by_class_name("doi").text
-    start = doi.find("doi.org", 0, -1)+8
-    end=doi.find("/", start, -1)
-    doi = doi[start:end]
-    
-    title = driver.find_element_by_class_name("title-text").text
-    abstract = driver.find_element_by_class_name("abstract.author").text
+    try:
+        #DOI
+        doi = driver.find_element_by_class_name("doi").text
+        start = doi.find("doi.org", 0, -1)+8
+        end=doi.find("/", start, -1)
+        doi = doi[start:end]
+        
+        title = driver.find_element_by_class_name("title-text").text
+        abstract = driver.find_element_by_class_name("abstract.author").text
 
-    given_names = driver.find_elements_by_class_name("text.given-name")
-    surnames = driver.find_elements_by_class_name("text.surname")
-    names = []
-    for i in range (len(surnames)):
-        names.append(given_names[i].text + " " + surnames[i].text)
-    
-    if doi not in abs_dict["doi"]:
-        abs_dict["titles"].append(title)
-        abs_dict["abstracts"].append(abstract)
-        abs_dict["doi"].append(doi)
-        abs_dict["authors"].append(authors)
+        given_names = driver.find_elements_by_class_name("text.given-name")
+        surnames = driver.find_elements_by_class_name("text.surname")
+        authors_list = []
+        for i in range (len(surnames)):
+            authors_list.append(given_names[i].text + " " + surnames[i].text)
+        
+        if title not in abs_dict["titles"]:
+            abs_dict["titles"].append(title)
+            abs_dict["abstracts"].append(abstract)
+            abs_dict["doi"].append(doi)
+            abs_dict["authors"].append(authors_list)
+            abs_dict["keywords"].append(keywords)
+            abs_dict["sources"].append(source)
+        print("other abstract added")
+    except:
+        print("problem with url")
 
-    driver.quit()
+
     return 0
 
 

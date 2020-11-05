@@ -24,8 +24,8 @@ url = "https://bib.cnrs.fr/#"
 ID = "18CHIMFR3417"
 mdp = "MSSLPT"
 ressource_type = "article"
-keywords = "agronomy"
-source = "mdpi"
+keywords = "agric"
+source = "elsevier science"
 #american chemical society
 #elsevier b.v. (science direct)
 
@@ -166,14 +166,17 @@ print('Number of links extracted : {}'.format(n_links))
 
 
 
-
+counter = 0
 for url in links:
     #driver =  webdriver.Chrome(chromedriver)
     
     driver.get(url)
-    mdpi_abstract_parser(driver, url, abstract_dict, keywords, source)
+    springer_abstract_parser(driver, url, abstract_dict, keywords, source)
     driver.implicitly_wait(5)
-
+    counter+=1
+    if counter%10 == 0:
+        with open('abs_dict.json', 'w+') as f:
+            json.dump(abstract_dict, f)
     #mdpi_abstract_parser(url)
 
 print(len(abstract_dict["doi"]))
