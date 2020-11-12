@@ -9,7 +9,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 
-from journal_parsers import springer_abstract_parser, mdpi_abstract_parser
+from journal_parsers import sciencedirect_abstract_parser, mdpi_abstract_parser,HAL_abstract_parser
 
 from bs4 import BeautifulSoup 
 import requests
@@ -24,13 +24,13 @@ url = "https://bib.cnrs.fr/#"
 ID = "18CHIMFR3417"
 mdp = "MSSLPT"
 ressource_type = "article"
-keywords = "agric"
-source = "elsevier science"
+keywords = "machine learning agriculture"
+source = "HAL"
 #american chemical society
 #elsevier b.v. (science direct)
 
-
-with open("abs_dict.json") as f:
+abstract_dict_file = "abs_dict_HAL.json"
+with open(abstract_dict_file) as f:
     abstract_dict = json.load(f)
 
 
@@ -71,19 +71,13 @@ xpath_publishers = "/html/body/div[1]/div[1]/div/div/div/span/div/div[1]/div/div
 xpath_languages = "/html/body/div[1]/div[1]/div/div/div/span/div/div[1]/div/div[2]/div/span/div[4]/div[1]/button[2]/span[1]"
 xpath_content_provider = "/html/body/div[1]/div[1]/div/div/div/span/div/div[1]/div/div[2]/div/span/div[7]/div[1]/button[2]/span[1]"
 
-button = driver.find_element_by_xpath(xpath_publishers)
+button = driver.find_element_by_xpath(xpath_content_provider)
 driver.execute_script("arguments[0].click();", button) #extending the language list
 
 driver.implicitly_wait(5)
 
-
-
-
-
 test = driver.find_elements_by_css_selector("label>input[type='checkbox']")
 a = driver.find_elements_by_class_name("facet_value.checkbox")
-print(len(test))
-print(len(a))
 
 for i in range (len (a)):
     element = a[i]
@@ -94,11 +88,6 @@ for i in range (len (a)):
     except:
         print("got out of the loop")
     
-
-
-
-
-
 
 # Number of links extracted
 n_links = 0
@@ -141,20 +130,6 @@ while True and current_page<100:
         links.append(ressource['href'])
         
     n_links += len(ressources_links)
-    
-
-    """
-    pages = driver.find_elements_by_css_selector("h4>a[class='fetch-link']")
-    for page in pages:
-        page.click()
-        driver.implicitly_wait(10)
-        driver.find_element_by_tag_name('body').send_keys(Keys.COMMAND + 'w') 
-    #driver.execute_script("arguments[0].click();", test[0])
-    print("ending")
-    """
-
-
-
 
     # Next page
     pagination = driver.find_element_by_class_name("pagination")
@@ -165,22 +140,21 @@ print('Number of links extracted : {}'.format(n_links))
 #driver.quit() # closing the webdriver 
 
 
+# links =['https://hal.archives-ouvertes.fr/hal-02276189']
 
 counter = 0
-for url in links:
-    #driver =  webdriver.Chrome(chromedriver)
-    
+for url in links:    
     driver.get(url)
-    springer_abstract_parser(driver, url, abstract_dict, keywords, source)
+    HAL_abstract_parser(driver, url, abstract_dict, keywords, source)
     driver.implicitly_wait(5)
     counter+=1
     if counter%10 == 0:
-        with open('abs_dict.json', 'w+') as f:
+        with open(abstract_dict_file, 'w+') as f:
             json.dump(abstract_dict, f)
     #mdpi_abstract_parser(url)
 
 print(len(abstract_dict["doi"]))
-with open('abs_dict.json', 'w+') as f:
+with open(abstract_dict_file, 'w+') as f:
     json.dump(abstract_dict, f)
 
 driver.quit()

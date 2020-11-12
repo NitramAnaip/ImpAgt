@@ -18,7 +18,7 @@ import requests
 chromedriver = "/usr/local/bin/chromedriver"
 os.environ["webdriver.chrome.driver"] = chromedriver
 
-def springer_abstract_parser(driver, url, abs_dict, keywords, source):
+def sciencedirect_abstract_parser(driver, url, abs_dict, keywords, source):
     """
     ARGS: url is the url of the journal/abstract/article you wnt to get
         abs_dict is the dictionnary containing all our data (abstracts, doi s, authors ...)
@@ -68,7 +68,7 @@ def mdpi_abstract_parser(driver, url, abs_dict, keywords, source):
         abstract = driver.find_element_by_class_name('art-abstract.in-tab.hypothesis_container').text
         title = driver.find_element_by_class_name("title.hypothesis_container").text
         #print("title ", title)
-        authors = driver.find_elements_by_class_name("sciprofiles-link__link")
+        authors = driver.find_elements_by_class_name("authors")
         
         authors_list = []
         for author in authors:
@@ -89,7 +89,48 @@ def mdpi_abstract_parser(driver, url, abs_dict, keywords, source):
     return 0
 
 
+def HAL_abstract_parser(driver, url, abs_dict, keywords, source):
 
+    try:
+            #DOI
+        html = driver.page_source
+        soup = BeautifulSoup(html, "html.parser")
+        
+        doi = soup.select("div.widget.widget-identifiants ul li:contains('DOI')")
+        if len(doi)==0: doi = 'unknown'
+        else: 
+            doi = doi[0].text[6:13]
+        
+        #print("doi: ", doi)
+        try:
+            abstract = driver.find_element_by_class_name('abstract-content').text
+        except:
+            print("No abstract")
+            return 0
+
+        title = driver.find_element_by_class_name("title").text
+        #print("title ", title)
+
+        # authors = driver.find_elements_by_class_name("authors")
+        authors = soup.select("div.authors span.author a")
+        authors_list = []
+        for author in authors:
+            authors_list.append(author.text)
+        # print(authors)   
+
+        #print("authors: ", authors_list)
+
+        if title not in abs_dict["titles"]:
+            abs_dict["titles"].append(title)
+            abs_dict["abstracts"].append(abstract)
+            abs_dict["doi"].append(doi)
+            abs_dict["authors"].append(authors_list)
+            abs_dict["keywords"].append(keywords)
+            abs_dict["sources"].append(source)
+    except:
+        print("problem with url")
+
+    return 0
 
 """
 #BEWARE THIS IS A REINITILISATION OF OUR SAVED DATA. DO NOT USE UNLESS UTTERLY SURE OF WHAT YOU ARE DOING

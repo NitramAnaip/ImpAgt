@@ -21,7 +21,7 @@ url = "https://bib.cnrs.fr/#"
 ID = "18CHIMFR3417"
 mdp = "MSSLPT"
 ressource_type = "article"
-keywords = "agriculture"
+keywords = "mildiou technology"
 
 driver.get(url)
 
@@ -53,42 +53,42 @@ search.send_keys(Keys.ENTER)
 # this is just to ensure that the page is loaded 
 driver.implicitly_wait(10)
 
-#Here we will apply a few filters*******************
-xpath_languages = "/html/body/div[1]/div[1]/div/div/div/span/div/div[1]/div/div[2]/div/span/div[4]/div[1]/button[2]/span[1]"
-xpath_sources = ""
-button = driver.find_element_by_xpath(xpath_languages)
-driver.execute_script("arguments[0].click();", button) #extending the language list
+# #Here we will apply a few filters*******************
+# xpath_languages = "/html/body/div[1]/div[1]/div/div/div/span/div/div[1]/div/div[2]/div/span/div[4]/div[1]/button[2]/span[1]"
+# xpath_sources = ""
+# button = driver.find_element_by_xpath(xpath_languages)
+# driver.execute_script("arguments[0].click();", button) #extending the language list
 
-driver.implicitly_wait(5)
+# driver.implicitly_wait(5)
 
-a=driver.find_elements_by_css_selector("input[type='checkbox']")
-for element in a:
-    #print(element.text)
-    if "english (" in element.text[:9]:
-        print("test1")
-        print("this is it biatch")
-        element.click()
-
-
-a = driver.find_elements_by_class_name("facet_value.checkbox")
+# a=driver.find_elements_by_css_selector("input[type='checkbox']")
+# for element in a:
+#     #print(element.text)
+#     if "english (" in element.text[:9]:
+#         print("test1")
+#         print("this is it biatch")
+#         element.click()
 
 
-for element in a:
-    if element.text[:9] == "english (" :
-        print("test2")
-        print("this is it biatch")
-        print(element)
-        driver.execute_script("arguments[0].click();", element)
+# a = driver.find_elements_by_class_name("facet_value.checkbox")
 
 
-e="e"
-a = driver.find_elements_by_xpath("//label[contains = 'title']")
-print(a)
-print("test3")
-for element in a:
+# for element in a:
+#     if element.text[:9] == "english (" :
+#         print("test2")
+#         print("this is it biatch")
+#         print(element)
+#         driver.execute_script("arguments[0].click();", element)
 
-    print(element.text)
-# end of filter part ********************************
+
+# e="e"
+# a = driver.find_elements_by_xpath("//label[contains = 'title']")
+# print(a)
+# print("test3")
+# for element in a:
+
+#     print(element.text)
+# # end of filter part ********************************
 
 
 
@@ -127,15 +127,9 @@ while True or current_page<100:
     elif ressource_type=="book": ressources_links = soup.select("div.record.record-publication [href]")
     
     for ressource in ressources_links : 
-        if "resolver." in ressource['href']:
-
-            print(ressource.text)
-            print(ressource['href'])
-            print("*********")
         links.append(ressource['href'])
         
     n_links += len(ressources_links)
-    print("////////////////////////////////////")
 
 
     # Next page
@@ -146,8 +140,6 @@ while True or current_page<100:
 print('Number of links extracted : {}'.format(n_links))
 driver.quit() # closing the webdriver 
 
-print(links)
-
-# Comment out if you dont want to save urls to harddrive
-with open("{}_urls_{}.txt".format(ressource_type, keywords), "wb") as fp:   #Pickling
-    pickle.dump(links, fp)
+# # Comment out if you dont want to save urls to harddrive
+# with open("{}_urls_{}.txt".format(ressource_type, keywords), "wb") as fp:   #Pickling
+#     pickle.dump(links, fp)

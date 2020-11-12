@@ -11,9 +11,12 @@ from num2words import num2words
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+import heapq
+
 
 
 parsed_sites = 'abs_dict.json'
+
 
 print("Started Reading JSON file")
 with open(parsed_sites, "r") as read_file:
@@ -88,13 +91,67 @@ def preprocess(data):
     return data
 
 
-# Preprocessing
-preprocess_abstract = []
+# # Preprocessing
+print("Preprocessing {} abstracts...".format(len(corpus)))
+preprocessed_abstracts = []
 for abstract in corpus:
-    preprocess_abstract.append(preprocess(abstract))
+    preprocessed_abstracts.append(preprocess(abstract))
+print("Preprocessing DONE...")
 
-# Word counts
-words = word_tokenize(str(preprocess_abstract[3]))
-fd = FreqDist(words)
-fd.plot(20)
 
+# # Word Counts
+
+# words = word_tokenize(str(preprocess_abstract[3]))
+# fd = FreqDist(words)
+# print(fd.most_common(3))
+# fd.plot(20)
+
+print("Word Counts")
+wordfreq = {}
+for abstract in preprocessed_abstracts:
+    tokens = word_tokenize(abstract)
+    for token in tokens:
+        if token not in wordfreq.keys():
+            wordfreq[token] = 1
+        else:
+            wordfreq[token] += 1
+
+most_wordfreq = sorted(wordfreq.items(), key=lambda x: x[1], reverse=True)[:200]
+# print(list(sort_wordfreq)[:20])
+
+# IDF values for the most frequently occurring words in the corpus
+print("IDF Values")
+word_idf_values = {}
+for token in most_wordfreq:
+    doc_containing_word = 0
+    for abstract in preprocessed_abstracts:
+        if token[0] in word_tokenize(abstract):
+            doc_containing_word += 1
+    word_idf_values[token] = np.log(len(preprocessed_abstracts)/(1 + doc_containing_word))
+
+
+# TF values
+print("TF Values")
+word_tf_values = {}
+for token in most_wordfreq:
+    sent_tf_vector = []
+    for abstract in preprocessed_abstracts:
+        doc_freq = 0
+        for word in word_tokenize(abstract):
+            if token[0] == word:
+                  doc_freq += 1
+        word_tf = doc_freq/len(word_tokenize(abstract))
+        sent_tf_vector.append(word_tf)
+    word_tf_values[token] = sent_tf_vector
+
+# TF-IDF values
+print("TF-IDF Values")
+tfidf_values = []
+for token in word_tf_values.keys():
+    tfidf_sentences = []
+    for tf_sentence in word_tf_values[token]:
+        tf_idf_score = tf_sentence * word_idf_values[token]
+        tfidf_sentences.append(tf_idf_score)
+    tfidf_values.append(tfidf_sentences)
+
+print(tfidf_values)
