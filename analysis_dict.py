@@ -1,13 +1,18 @@
+# Check out here for preprocessing: https://www.machinelearningplus.com/nlp/topic-modeling-gensim-python/
+
+
 import json
 import numpy as np
 
+#import nltk
 from nltk import FreqDist
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import PorterStemmer, WordNetLemmatizer
 from collections import Counter
-from num2words import num2words
 
+
+# Plotting tools
 import matplotlib.pyplot as plt
 import seaborn as sns
 
