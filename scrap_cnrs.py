@@ -9,30 +9,33 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 
-from journal_parsers import sciencedirect_abstract_parser, mdpi_abstract_parser,HAL_abstract_parser
-
+from journal_parsers import sciencedirect_abstract_parser, mdpi_abstract_parser,HAL_abstract_parser,public_lib_science_abstract_parser,pdf_abstract_parser,nature_abstract_parser,ieee_abstract_parser
+from journal_parsers import article_source
 from bs4 import BeautifulSoup 
 import requests
-
 
 # Load driver (for Google Chrome)  
 chromedriver = "/usr/local/bin/chromedriver"
 os.environ["webdriver.chrome.driver"] = chromedriver
 driver = webdriver.Chrome(chromedriver)
+driver.maximize_window()
 
 url = "https://bib.cnrs.fr/#"
 ID = "18CHIMFR3417"
 mdp = "MSSLPT"
 ressource_type = "article"
-keywords = "machine learning agriculture"
-source = "HAL"
+keywords = "deep learning agriculture"
+# source = "ieee"
 #american chemical society
-#elsevier b.v. (science direct)
+# elsevier b.v., elsevier ltd, elsevier(science direct)
+# HAL
+# mdpi publishing, mpdi ag, mpdi
+# public library of science
 
-abstract_dict_file = "abs_dict_HAL.json"
+
+abstract_dict_file = "abs_dict_all.json"
 with open(abstract_dict_file) as f:
-    abstract_dict = json.load(f)
-
+    abs_dict = json.load(f)
 
 driver.get(url)
 
@@ -48,6 +51,7 @@ password = driver.find_element_by_class_name('password.form-control')
 password.send_keys(mdp)
 connect = driver.find_element_by_class_name('fetch-button.api.btn.btn-primary.btn-block').click()
 driver.implicitly_wait(10)
+
 
 # Select if you want to search for books or articles
 if ressource_type=="article":  
@@ -71,90 +75,92 @@ xpath_publishers = "/html/body/div[1]/div[1]/div/div/div/span/div/div[1]/div/div
 xpath_languages = "/html/body/div[1]/div[1]/div/div/div/span/div/div[1]/div/div[2]/div/span/div[4]/div[1]/button[2]/span[1]"
 xpath_content_provider = "/html/body/div[1]/div[1]/div/div/div/span/div/div[1]/div/div[2]/div/span/div[7]/div[1]/button[2]/span[1]"
 
-button = driver.find_element_by_xpath(xpath_content_provider)
-driver.execute_script("arguments[0].click();", button) #extending the language list
-
-driver.implicitly_wait(5)
-
-test = driver.find_elements_by_css_selector("label>input[type='checkbox']")
-a = driver.find_elements_by_class_name("facet_value.checkbox")
-
-for i in range (len (a)):
-    element = a[i]
-    try:
-        if source in element.text[:len(source)]:
-            driver.execute_script("arguments[0].click();", test[i+3])
-            driver.implicitly_wait(10)
-    except:
-        print("got out of the loop")
+# button = driver.find_element_by_xpath(xpath_publishers)
+# driver.execute_script("arguments[0].click();", button) #extending the language list
+# driver.implicitly_wait(5)
     
 
 # Number of links extracted
-n_links = 0
+n_articles = 0
 
 # Set current page
 current_page = 1
 links = []
+n_page_max = 3
 
 
-while True and current_page<100:
+while True and current_page<n_page_max:
     # Take to driver directly to the search-results path
     search_result = driver.find_element_by_class_name('search-result')
-
-
-    
     try:
         record_list = driver.find_element_by_class_name("record_list")
     except NoSuchElementException:
         print('No result found...')
-        break
+        # break
 
     # It renders the JS code and stores all of the information in static HTML code
+    notice_opener = driver.find_elements_by_class_name('notice-opener.btn.btn-link')
+
+    for notice in notice_opener:
+        driver.execute_script("arguments[0].click();", notice)
+
+    articles = driver.find_elements_by_class_name('record.record-article')
+    notice = driver.find_element_by_class_name('dl.notice-list')
+    dl_item = driver.find_elements_by_class_name("span.dl-item")
+
     html = driver.page_source
-
-    # Now, we can simply apply bs4 to html variable 
     soup = BeautifulSoup(html, "html.parser")
+    articles = soup.find_all('div', {'class' : 'record record-article'})
 
-    # Condition to stop (if the next page is the same)
-    page = int(soup.select("span.current.page")[0].text)
-    if (page != current_page):
-        end_message = "Last page parsed!"
-        print(end_message)
-        break
+    for article in articles:  
 
-    # Extract links
-    if ressource_type=="article": ressources_links = soup.select("div.record.record-article [href]")
-    elif ressource_type=="book": ressources_links = soup.select("div.record.record-publication [href]")
-    
-    for ressource in ressources_links : 
-        links.append(ressource['href'])
+        soup = article
+        try:
+            authors_list=[]
+            authors = soup.find('dt',text='Author').find_next("dd").find_all('a')
+            for author in authors:
+                authors_list.append(author.text)
+        except:
+            authors_list = 'unkown'
         
-    n_links += len(ressources_links)
+        try:
+            abstract = soup.find('dt',text='Abstract').find_next("span").text
+        except:
+            continue
+
+        try:
+            doi = soup.find('dt',text='DOI').find_next("span").text[:8]
+        except:
+            doi = 'unknown'
+
+        source = article_source(soup)
+
+        try:
+            title = soup.find('h4',{'class':'title'}).find('a').text.split('[')[0][2:]
+        except:
+            title = 'unknown'
+
+        if source != 'unknown':
+            if title not in abs_dict["titles"]:
+                n_articles += 1
+
+                abs_dict["titles"].append(title)
+                abs_dict["abstracts"].append(abstract)
+                abs_dict["doi"].append(doi)
+                abs_dict["authors"].append(authors_list)
+                abs_dict["keywords"].append(keywords)
+                abs_dict["sources"].append(source)
+        
+    print(' {} abstracts parsed on this page'.format(n_articles))
 
     # Next page
     pagination = driver.find_element_by_class_name("pagination")
     next_page = driver.find_element_by_class_name("next").click()
     current_page+=1
 
-print('Number of links extracted : {}'.format(n_links))
-#driver.quit() # closing the webdriver 
+print('Number of abstracts extracted : {}'.format(n_articles))
 
-
-# links =['https://hal.archives-ouvertes.fr/hal-02276189']
-
-counter = 0
-for url in links:    
-    driver.get(url)
-    HAL_abstract_parser(driver, url, abstract_dict, keywords, source)
-    driver.implicitly_wait(5)
-    counter+=1
-    if counter%10 == 0:
-        with open(abstract_dict_file, 'w+') as f:
-            json.dump(abstract_dict, f)
-    #mdpi_abstract_parser(url)
-
-print(len(abstract_dict["doi"]))
 with open(abstract_dict_file, 'w+') as f:
-    json.dump(abstract_dict, f)
+    json.dump(abs_dict, f)
 
 driver.quit()
