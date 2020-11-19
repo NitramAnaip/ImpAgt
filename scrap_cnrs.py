@@ -24,9 +24,9 @@ url = "https://bib.cnrs.fr/#"
 ID = "18CHIMFR3417"
 mdp = "MSSLPT"
 ressource_type = "article"
-keywords = "deep learning agriculture"
+keywords = "dairy machine learning"
 date_from = 2018
-date_to = 2021
+date_to = 2020
 # source = "ieee"
 #american chemical society
 # elsevier b.v., elsevier ltd, elsevier(science direct)
@@ -35,9 +35,13 @@ date_to = 2021
 # public library of science
 
 
-abstract_dict_file = "abs_dict_all.json"
+abstract_dict_file = "abs_dict.json"
 with open(abstract_dict_file) as f:
     abs_dict = json.load(f)
+
+print("len of the dict: ", len(abs_dict["titles"]))
+print(abs_dict["titles"][-5:])
+
 
 driver.get(url)
 
@@ -95,7 +99,7 @@ n_articles = 0
 # Set current page
 current_page = 1
 links = []
-n_page_max = 3
+n_page_max = 100
 
 
 while True and current_page<n_page_max:
@@ -153,15 +157,16 @@ while True and current_page<n_page_max:
             if title not in abs_dict["titles"]:
                 n_articles += 1
 
-                abs_dict["titles"].append(title)
+                abs_dict["titles"].append(title[3:])
                 abs_dict["abstracts"].append(abstract)
                 abs_dict["doi"].append(doi)
                 abs_dict["authors"].append(authors_list)
                 abs_dict["keywords"].append(keywords)
                 abs_dict["sources"].append(source)
         
-    print(' {} abstracts parsed on this page'.format(n_articles))
-
+    print(' {} abstracts since beginning of request'.format(n_articles))
+    with open(abstract_dict_file, 'w+') as f:
+        json.dump(abs_dict, f)
     # Next page
     pagination = driver.find_element_by_class_name("pagination")
     next_page = driver.find_element_by_class_name("next").click()
