@@ -25,6 +25,8 @@ ID = "18CHIMFR3417"
 mdp = "MSSLPT"
 ressource_type = "article"
 keywords = "deep learning agriculture"
+date_from = 2018
+date_to = 2021
 # source = "ieee"
 #american chemical society
 # elsevier b.v., elsevier ltd, elsevier(science direct)
@@ -70,6 +72,13 @@ driver.implicitly_wait(20)
 
 #Here we will apply a few filters*******************
 
+date_start = driver.find_element_by_class_name('from')
+date_start.clear()
+date_start.send_keys(date_from)
+
+apply_filter = driver.find_element_by_class_name('fetch-button.title.clearFacet.btn.btn-primary')
+driver.execute_script("arguments[0].click();", apply_filter)
+driver.implicitly_wait(5)
 
 xpath_publishers = "/html/body/div[1]/div[1]/div/div/div/span/div/div[1]/div/div[2]/div/span/div[6]/div[1]/button[2]/span[1]"
 xpath_languages = "/html/body/div[1]/div[1]/div/div/div/span/div/div[1]/div/div[2]/div/span/div[4]/div[1]/button[2]/span[1]"
