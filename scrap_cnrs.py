@@ -42,10 +42,32 @@ driver = webdriver.Chrome(chromedriver)
 driver.maximize_window()
 
 url = "https://bib.cnrs.fr/#"
+<<<<<<< HEAD
 
 abstract_dict_file = args.abs_dict
+=======
+ID = "18CHIMFR3417"
+mdp = "MSSLPT"
+ressource_type = "article"
+keywords = "dairy machine learning"
+date_from = 2018
+date_to = 2020
+# source = "ieee"
+#american chemical society
+# elsevier b.v., elsevier ltd, elsevier(science direct)
+# HAL
+# mdpi publishing, mpdi ag, mpdi
+# public library of science
+
+
+abstract_dict_file = "abs_dict.json"
+>>>>>>> 434aa7fa8fa685f439a710e71f987ba8186a2413
 with open(abstract_dict_file) as f:
     abs_dict = json.load(f)
+
+print("len of the dict: ", len(abs_dict["titles"]))
+print(abs_dict["titles"][-5:])
+
 
 driver.get(url)
 
@@ -63,7 +85,12 @@ driver.implicitly_wait(5)
 
 # Set current page
 current_page = 1
+<<<<<<< HEAD
 n_page_max = 2
+=======
+links = []
+n_page_max = 100
+>>>>>>> 434aa7fa8fa685f439a710e71f987ba8186a2413
 
 soup_list = []
 
@@ -139,19 +166,42 @@ for soup in soup_list:
 
         if source != 'unknown':
             if title not in abs_dict["titles"]:
+<<<<<<< HEAD
                 n_articles_page += 1
                 abs_dict["titles"].append(title)
+=======
+                n_articles += 1
+
+                abs_dict["titles"].append(title[3:])
+>>>>>>> 434aa7fa8fa685f439a710e71f987ba8186a2413
                 abs_dict["abstracts"].append(abstract)
                 abs_dict["doi"].append(doi)
                 abs_dict["authors"].append(authors_list)
                 abs_dict["keywords"].append(args.keyword)
                 abs_dict["sources"].append(source)
+<<<<<<< HEAD
     
     print(' {} abstracts parsed on this page'.format(n_articles_page))
 
     n_articles += n_articles_page
+=======
+        
+    print(' {} abstracts since beginning of request'.format(n_articles))
+    with open(abstract_dict_file, 'w+') as f:
+        json.dump(abs_dict, f)
+    # Next page
+    pagination = driver.find_element_by_class_name("pagination")
+    next_page = driver.find_element_by_class_name("next").click()
+    current_page+=1
+>>>>>>> 434aa7fa8fa685f439a710e71f987ba8186a2413
 
 print('Number of abstracts extracted : {}'.format(n_articles))
 
 with open(abstract_dict_file, 'w+') as f:
+<<<<<<< HEAD
     json.dump(abs_dict, f)
+=======
+    json.dump(abs_dict, f)
+
+driver.quit()
+>>>>>>> 434aa7fa8fa685f439a710e71f987ba8186a2413
