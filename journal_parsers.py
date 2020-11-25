@@ -13,37 +13,9 @@ import requests
 import io
 import PyPDF2
 
-
-
 # Load driver (for Google Chrome)  
 chromedriver = "/usr/local/bin/chromedriver"
 os.environ["webdriver.chrome.driver"] = chromedriver
-
-
-def article_source(soup):
-    type_publication = soup.find('dt',text='Type of publication')
-    publisher = soup.find('dt',text='Publisher')
-    document_type = soup.find('dt',text='Document type')
-
-    if publisher != None:
-        source = publisher.find_next("span").text
-        return source
-
-    elif type_publication != None:
-        type_publication = type_publication.find_next("span").text
-
-        if type_publication.lower() == 'journal paper':
-            source = soup.find('dt',text='Source').find_next("span").text
-            source = source.split('Publisher:')[1].split('Country')[0]
-            return source
-
-    elif document_type != None:
-        document_type = document_type.find_next("span").text.lower()
-        if (document_type == 'working paper') | (document_type == 'report'):
-            return 'arxiv'
-
-    return 'unknown'
-
 
 def sciencedirect_abstract_parser(driver, url, abs_dict, keywords, source):
     """
@@ -228,53 +200,6 @@ def nature_abstract_parser(driver, url, abs_dict, keywords, source):
         print("problem with url")
 
     return 0
-
-
-def pdf_abstract_parser(driver, url, abs_dict, keywords, source):
-    try:
-        pdf = requests.get(url)
-        with io.BytesIO(pdf.content) as f:
-            reader = PyPDF2.PdfFileReader(f)
-            print(reader.getDocumentInfo())
-    except:
-        print("problem with url")
-
-
-
-def ieee_abstract_parser(driver, url, abs_dict, keywords, source):
-    try:
-        #DOI
-
-        doi = 'unknown'
-        html = driver.page_source
-        soup = BeautifulSoup(html, "html.parser")
-        try:
-            abstract = soup.find('meta',attrs={'property': 'og:description'})['content']
-
-        except:
-            print("No abstract in {}".format(url))
-            return 0
-
-        title = soup.select("div.document-header-title-container.col h1")[0].text
-
-        authors = soup.select("div.authors-banner-row-middle span.blue-tooltip a")
-
-        authors_list = []
-        for author in authors:
-            authors_list.append(author.text)
-
-        if title not in abs_dict["titles"]:
-            abs_dict["titles"].append(title)
-            abs_dict["abstracts"].append(abstract)
-            abs_dict["doi"].append(doi)
-            abs_dict["authors"].append(authors_list)
-            abs_dict["keywords"].append(keywords)
-            abs_dict["sources"].append(source)
-    except:
-        print("problem with url")
-
-    return 0
-
 
 """
 #BEWARE THIS IS A REINITILISATION OF OUR SAVED DATA. DO NOT USE UNLESS UTTERLY SURE OF WHAT YOU ARE DOING
