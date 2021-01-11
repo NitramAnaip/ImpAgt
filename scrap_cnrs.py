@@ -9,7 +9,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 
-from journal_parsers import sciencedirect_abstract_parser, mdpi_abstract_parser,HAL_abstract_parser,public_lib_science_abstract_parser,pdf_abstract_parser,nature_abstract_parser,ieee_abstract_parser
+from journal_parsers import sciencedirect_abstract_parser, mdpi_abstract_parser,HAL_abstract_parser,public_lib_science_abstract_parser,nature_abstract_parser
 from utils_scraping import article_source,search_ressource,select_date,article_source,authentificate
 
 from bs4 import BeautifulSoup 
@@ -17,20 +17,20 @@ import requests
 
 import argparse
 
-parser = argparse.ArgumentParser(description='RecVis A3 training script')
+parser = argparse.ArgumentParser(description='Scraping tool cnrs')
 parser.add_argument('--date_from', type=int, default=2015, metavar='S',
                     help="start date to search articles")
 parser.add_argument('--date_to', type=int, default=2021, metavar='E',
                     help="end date")
 parser.add_argument('--types', type=str, default='article', metavar='A',
-                    help="end date")
+                    help="whether article of book")
 parser.add_argument('--keyword', type=str, default='machine learning agriculture', metavar='K',
-                    help="end date")
+                    help="keyword")
 parser.add_argument('--mdp', type=str, default='MSSLPT', metavar='M',
                     help="for login")
 parser.add_argument('--ID', type=str, default='18CHIMFR3417', metavar='I',
                     help="for login")
-parser.add_argument('--abs_dict', type=str, default='abs_dict_all.json', metavar='A',
+parser.add_argument('--abs_dict', type=str, default='abs_dict.json', metavar='A',
                     help="root file for the abstracts dictionary")                
 args = parser.parse_args()
 
@@ -48,8 +48,6 @@ abstract_dict_file = args.abs_dict
 with open(abstract_dict_file) as f:
     abs_dict = json.load(f)
 
-print("len of the dict: ", len(abs_dict["titles"]))
-print(abs_dict["titles"][-5:])
 
 
 driver.get(url)

@@ -11,7 +11,6 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from bs4 import BeautifulSoup 
 import requests
 import io
-import PyPDF2
 
 # Load driver (for Google Chrome)  
 chromedriver = "/usr/local/bin/chromedriver"
