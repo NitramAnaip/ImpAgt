@@ -4,7 +4,7 @@ import numpy as np
 #from utils import preprocess_corpus
 
 
-from transformers import BartTokenizer, BartForConditionalGeneration, BartConfig, AutoModelWithLMHead, AutoTokenizer, pipeline
+from transformers import BartTokenizer, BartForConditionalGeneration, BartConfig, AutoModelWithLMHead, AutoTokenizer, pipeline, PegasusTokenizerFast
 
 
 
@@ -44,6 +44,9 @@ def main():
     summarizer = pipeline("summarization", model="google/pegasus-arxiv", tokenizer="t5-base")
     print(summarizer(ARTICLE, max_length=max_len,   min_length=30))
     """
+
+    model_name = "google/pegasus-arxiv"
+    tok = PegasusTokenizerFast.from_pretrained(model_name)
 
 
     #End of bart model
