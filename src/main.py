@@ -17,38 +17,39 @@ def main():
     with open(parsed_sites, "r") as read_file:
         abstract_dict = json.load(read_file)
         print("Decoded JSON Data From File")
-    ARTICLE = ""
-    for i in range (1):
-        print(len(abstract_dict["abstracts"][i]))
-        print(abstract_dict["abstracts"][i])
-        ARTICLE += abstract_dict["abstracts"][i]
-    #print(ARTICLE)
     
+    for i in range (3):
+        ARTICLE = abstract_dict["abstracts"][i]
+        print(ARTICLE)
+        print(len(ARTICLE))
 
-
-
+    
     #BART model
     #1st attempt
-    max_len = 400
-    """
+
+
     summarizer = pipeline("summarization")
-    print(summarizer(ARTICLE, max_length=max_len,   min_length=30))
+    print(summarizer(ARTICLE, max_length=1000,   min_length=30))
 
-
-    # use t5 in tf
-    summarizer = pipeline("summarization", model="t5-base", tokenizer="t5-base")
-    print(summarizer(ARTICLE, max_length=max_len,   min_length=30))
-    
-
-    print("********* \nPegasus: \n")
-    summarizer = pipeline("summarization", model="google/pegasus-arxiv", tokenizer="t5-base")
-    print(summarizer(ARTICLE, max_length=max_len,   min_length=30))
     """
+    2nd attempt at BART
+    # the results are far less satisfying than those with t5 or with the pipeline method above. There's probably a mistake in the way I'm using it
 
-    model_name = "google/pegasus-arxiv"
-    tok = PegasusTokenizerFast.from_pretrained(model_name)
+
+    model = BartForConditionalGeneration.from_pretrained('facebook/bart-large')
+    tokenizer = BartTokenizer.from_pretrained('facebook/bart-large')
 
 
+    
+    inputs = tokenizer([ARTICLE], max_length=2000, return_tensors='pt')
+    print(inputs['input_ids'])
+    print(len(inputs['input_ids'][0]))
+    # Generate Summary
+    summary_ids = model.generate(inputs['input_ids'], num_beams=4, max_length=5, early_stopping=True)
+    print(summary_ids)
+    print([tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in summary_ids[0]])
+    """
+    
     #End of bart model
     #Beginning of t5
 
